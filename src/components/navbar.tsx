@@ -4,12 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
+import { NavigationMenu } from "@/components/ui/navigation-menu";
 
 export default function Navbar() {
   return (
@@ -19,18 +14,12 @@ export default function Navbar() {
     >
       <Image src="/temochead.svg" alt="logo" width={50} height={50} />
       <h1 className="text-xl font-bold text-utd-primary">Ask Temoc</h1>
-      <NavigationMenuList>
-        <NavigationMenuItem className="px-4 py-2">
-          <NavigationMenuLink asChild>
-            <Link
-              href="/"
-              className="text-black font-boldrounded-md transition-colors"
-            >
-              Home
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-      </NavigationMenuList>
+      <Link
+        href="/"
+        className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 m-4"
+      >
+        Home
+      </Link>
     </NavigationMenu>
   );
 }
