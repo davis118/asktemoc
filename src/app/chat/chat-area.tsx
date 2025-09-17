@@ -5,22 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Send } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-}
+import { Message, Conversation } from "@/types";
+import QuoteComponent from "./quote";
 
 interface ChatAreaProps {
   selectedConversationId: string;
-  conversations: Array<{
-    id: string;
-    title: string;
-    messages: Message[];
-    lastMessage: Date;
-  }>;
+  conversations: Conversation[];
   onUpdateConversation: (conversationId: string, messages: Message[]) => void;
 }
 
@@ -50,7 +40,7 @@ export default function ChatArea({
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue.trim(),
+      content: [{ type: "text", message: inputValue.trim() }],
       role: "user",
       timestamp: new Date(),
     };
@@ -65,7 +55,7 @@ export default function ChatArea({
     // Simulate streaming response
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
-      content: "",
+      content: [],
       role: "assistant",
       timestamp: new Date(),
     };
@@ -75,25 +65,74 @@ export default function ChatArea({
     onUpdateConversation(selectedConversationId, messagesWithAssistant);
 
     // Simulate streaming
-    const mockResponses = [
-      "I'd be happy to help you with that! Let me provide you with some information about UTD.",
-      "Based on your question, here are some key points you should know about the University of Texas at Dallas.",
-      "That's a great question! UTD has excellent resources and programs that might be perfect for your needs.",
-      "I can definitely help you navigate UTD's systems and find the information you're looking for.",
-      "Let me break this down for you step by step so you can understand the process better.",
+    const mockResponses: Array<
+      Array<{ type: "text" | "source"; message: string }>
+    > = [
+      [
+        {
+          type: "text" as const,
+          message:
+            "I can definitely help you navigate UTD's systems and find the information you're looking for.",
+        },
+        {
+          type: "source" as const,
+          message:
+            "UTD offers over 140 academic programs across eight schools.",
+        },
+        {
+          type: "text" as const,
+          message: "Let me know if you need help with any specific aspect!",
+        },
+        {
+          type: "source" as const,
+          message:
+            "The university has a student population of over 30,000 students.",
+        },
+      ],
     ];
 
     const randomResponse =
       mockResponses[Math.floor(Math.random() * mockResponses.length)];
 
-    for (let i = 0; i <= randomResponse.length; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      const streamingMessage = {
-        ...assistantMessage,
-        content: randomResponse.slice(0, i),
-      };
-      const finalMessages = [...updatedMessages, streamingMessage];
-      onUpdateConversation(selectedConversationId, finalMessages);
+    // Stream each content item one by one
+    for (
+      let contentIndex = 0;
+      contentIndex < randomResponse.length;
+      contentIndex++
+    ) {
+      const contentItem = randomResponse[contentIndex];
+
+      if (contentItem.type === "text") {
+        // Stream text content character by character
+        for (
+          let charIndex = 0;
+          charIndex <= contentItem.message.length;
+          charIndex++
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          const streamingMessage = {
+            ...assistantMessage,
+            content: [
+              ...randomResponse.slice(0, contentIndex),
+              {
+                ...contentItem,
+                message: contentItem.message.slice(0, charIndex),
+              },
+            ],
+          };
+          const finalMessages = [...updatedMessages, streamingMessage];
+          onUpdateConversation(selectedConversationId, finalMessages);
+        }
+      } else {
+        // For source content, add it immediately
+        const streamingMessage = {
+          ...assistantMessage,
+          content: randomResponse.slice(0, contentIndex + 1),
+        };
+        const finalMessages = [...updatedMessages, streamingMessage];
+        onUpdateConversation(selectedConversationId, finalMessages);
+        await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay between items
+      }
     }
 
     setIsStreaming(false);
@@ -139,17 +178,30 @@ export default function ChatArea({
                     : "bg-muted border-utd-primary/20"
                 }`}
               >
-                <p className="whitespace-pre-wrap">
-                  {message.content}
-                  {message.role === "assistant" &&
-                    isStreaming &&
-                    message.id ===
-                      currentConversation.messages[
-                        currentConversation.messages.length - 1
-                      ]?.id && (
-                      <span className="animate-pulse text-utd-primary">|</span>
-                    )}
-                </p>
+                <div className="space-y-2">
+                  {message.content.map((contentItem, index) => (
+                    <div key={index}>
+                      {contentItem.type === "text" ? (
+                        <p className="whitespace-pre-wrap">
+                          {contentItem.message}
+                          {message.role === "assistant" &&
+                            isStreaming &&
+                            message.id ===
+                              currentConversation.messages[
+                                currentConversation.messages.length - 1
+                              ]?.id &&
+                            index === message.content.length - 1 && (
+                              <span className="animate-pulse text-utd-primary">
+                                |
+                              </span>
+                            )}
+                        </p>
+                      ) : (
+                        <QuoteComponent message={contentItem.message} />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </Card>
             </div>
           ))}

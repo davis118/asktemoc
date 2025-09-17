@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -11,12 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, MessageSquare, Trash2 } from "lucide-react";
-
-interface Conversation {
-  id: string;
-  title: string;
-  lastMessage: Date;
-}
+import { Conversation } from "@/types";
 
 interface SidebarProps {
   conversations: Conversation[];

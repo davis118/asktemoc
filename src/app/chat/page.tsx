@@ -4,20 +4,7 @@ import { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import ChatSidebar from "./sidebar";
 import ChatArea from "./chat-area";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  messages: Message[];
-  lastMessage: Date;
-}
+import { Message, Conversation } from "@/types";
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([
@@ -63,7 +50,9 @@ export default function Chat() {
               messages,
               title:
                 messages.length > 0 && conv.title === "New Chat"
-                  ? messages[0].content.slice(0, 30) + "..."
+                  ? messages[0].content
+                      .find((item) => item.type === "text")
+                      ?.message.slice(0, 30) + "..." || "New Chat"
                   : conv.title,
               lastMessage: new Date(),
             }
