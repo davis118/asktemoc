@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Ask Temoc - Your AI Guide to UTD",
   description:
     "Get instant answers about UTD classes, campus life, resources, and everything university-related. Powered by AI, Temoc is your 24/7 UTD assistant.",
+  icons: {
+    icon: "/temochead.svg",
+    shortcut: "/temochead.svg",
+    apple: "/temochead.svg",
+  },
 };
 
 export default function RootLayout({
